@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <!-- PWA Meta Tags to make it look like a real app on phones -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#121212">
   <title>Pocket AI Assistant</title>
   
@@ -14,87 +12,172 @@
   <style>
     body { margin: 0; font-family: 'Inter', sans-serif; background: #121212; color: #fff; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
     
-    /* Core UI */
+    /* Core Chat UI */
     #chat-box { width: 90%; max-width: 500px; height: 60vh; background: #1e1e1e; border-radius: 20px; padding: 20px; box-sizing: border-box; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 15px; border: 1px solid #333; }
     .msg { padding: 12px 18px; border-radius: 15px; max-width: 80%; font-size: 1.1rem; line-height: 1.4; animation: popIn 0.3s ease; }
-    @keyframes popIn { 0% { opacity: 0; transform: translateY(10px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes popIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
     .user-msg { background: #00FF41; color: #000; align-self: flex-end; border-bottom-right-radius: 2px; font-weight: bold; }
     .ai-msg { background: #333; color: #fff; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #444; }
     .ai-msg.masti { background: #FF00FF; color: #fff; border: none; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-    
-    /* The Floating Anime/Emoji Button */
-    #fab-container { position: absolute; bottom: 30px; right: 30px; z-index: 100; display: flex; flex-direction: column; align-items: flex-end; gap: 15px; }
-    .fab-menu { display: none; flex-direction: column; gap: 10px; align-items: flex-end; }
+    .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: #333; border-radius: 15px; color: #aaa; font-style: italic; }
+
+    /* Floating Menu Options */
+    .fab-menu { position: absolute; bottom: 120px; right: 20px; display: none; flex-direction: column; gap: 10px; align-items: flex-end; z-index: 90; }
     .fab-menu.active { display: flex; animation: slideUp 0.3s ease; }
     @keyframes slideUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
     
-    .menu-btn { background: #222; color: #fff; padding: 12px 20px; border-radius: 30px; border: 1px solid #00FF41; font-weight: bold; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(0,255,65,0.2); transition: 0.2s; white-space: nowrap; }
+    .menu-btn { background: #222; color: #fff; padding: 12px 20px; border-radius: 30px; border: 1px solid #00FF41; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 5px 15px rgba(0,255,65,0.2); transition: 0.2s; white-space: nowrap; }
     .menu-btn:hover { background: #00FF41; color: #000; }
     .menu-btn.masti-btn { border-color: #FF00FF; box-shadow: 0 5px 15px rgba(255,0,255,0.2); }
     .menu-btn.masti-btn:hover { background: #FF00FF; color: #fff; }
+
+    /* ================= THE ANIMATED AVATAR ================= */
+    /* Container hides off-screen (Spy Mode) */
+    #avatar-container { position: absolute; right: -80px; bottom: 30px; width: 80px; height: 80px; background: #00FF41; border-radius: 40px 0 0 40px; transition: right 0.5s ease; cursor: pointer; z-index: 100; box-shadow: -5px 5px 20px rgba(0,255,65,0.3); }
+    #avatar-container.slide-in { right: 0; }
+
+    /* The Hands peeking out */
+    .hand { position: absolute; width: 25px; height: 25px; background: #00cc33; border-radius: 50%; left: -12px; transition: all 0.3s; }
+    .hand.top { top: 15px; }
+    .hand.bottom { bottom: 15px; }
+
+    /* The Face */
+    .face { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
+    .eyes { display: flex; gap: 10px; }
+    .eye { width: 12px; height: 16px; background: #000; border-radius: 50%; transition: all 0.2s; }
+    .mouth { width: 20px; height: 8px; background: #000; border-radius: 0 0 10px 10px; transition: all 0.2s; }
+
+    /* Animations Classes */
+    .waving .hand.top { transform-origin: right bottom; animation: waveHand 0.4s alternate 3; }
+    @keyframes waveHand { 0% { transform: rotate(0deg) translateY(0); } 100% { transform: rotate(-40deg) translateY(-10px); } }
+
+    .kissing .mouth { width: 10px; height: 10px; border-radius: 50%; }
+    .heart { position: absolute; left: -10px; top: 30px; font-size: 1.5rem; color: #FF00FF; opacity: 0; pointer-events: none; }
+    .kissing .heart { animation: floatHeart 1s ease-out forwards; }
+    @keyframes floatHeart { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(-40px, -40px) scale(1.5); } }
+
+    .winking .eye.left { transform: scaleY(0.1); }
     
-    #main-fab { width: 70px; height: 70px; background: #00FF41; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; cursor: pointer; box-shadow: 0 10px 25px rgba(0,255,65,0.4); border: none; outline: none; transition: transform 0.2s; }
-    #main-fab:active { transform: scale(0.9); }
-    
-    /* Loading Indicator */
-    .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: #333; border-radius: 15px; color: #aaa; font-style: italic; }
-    
-    /* Hidden inputs */
+    .sad .eye { transform: rotate(-15deg); height: 10px; margin-top: 5px; }
+    .sad .mouth { border-radius: 10px 10px 0 0; transform: translateY(5px); }
+
+    /* Hidden File Input */
     #image-upload { display: none; }
   </style>
 </head>
 <body>
 
   <div id="chat-box">
-    <div class="msg ai-msg">System initialized. Tap the robot icon to start.</div>
+    <div class="msg ai-msg">System ready. Tap my hands to wake me up! 👀</div>
   </div>
   <div class="typing-indicator" id="typing">AI is thinking...</div>
 
-  <!-- Hidden File Input for Vision AI -->
   <input type="file" id="image-upload" accept="image/*" onchange="handleImageUpload(event)">
 
-  <!-- The Floating Action Button (FAB) Area -->
-  <div id="fab-container">
-    <div class="fab-menu" id="fab-menu">
-      <button class="menu-btn" onclick="triggerVisionMode()">📷 Analyze Screen (Upload)</button>
-      <button class="menu-btn" onclick="startLiveTalk('standard')">🎤 Live Talk (English)</button>
-      <button class="menu-btn masti-btn" onclick="startLiveTalk('masti')">🤪 Masti Time (Hyderabadi)</button>
+  <div class="fab-menu" id="fab-menu">
+    <button class="menu-btn" onclick="executeCommand('vision')">📷 Analyze Screen (Upload)</button>
+    <button class="menu-btn" onclick="executeCommand('standard')">🎤 Live Talk (English)</button>
+    <button class="menu-btn masti-btn" onclick="executeCommand('masti')">🤪 Masti Time (Hyderabadi)</button>
+  </div>
+
+  <div id="avatar-container" onclick="triggerWakeUp()">
+    <div class="hand top" id="hand-top"></div>
+    <div class="hand bottom" id="hand-bottom"></div>
+    <div class="face">
+      <div class="eyes">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+      </div>
+      <div class="mouth"></div>
     </div>
-    <button id="main-fab" onclick="toggleMenu()">🤖</button>
+    <div class="heart">💖</div>
   </div>
 
   <script>
-    // ================= SECURITY & SETUP =================
+    // 1. SETUP & SECURITY (Fixed Order)
+    const chatBox = document.getElementById('chat-box');
+    const typingIndicator = document.getElementById('typing');
+    const avatar = document.getElementById('avatar-container');
+    const menu = document.getElementById('fab-menu');
+
     let GEMINI_API_KEY = localStorage.getItem('gemini_api_key');
-    
-    // If no key is found, ask for it securely and save it
     if (!GEMINI_API_KEY) {
-        GEMINI_API_KEY = prompt("Welcome! Please paste your Gemini API Key to activate the AI brain:");
-        if (GEMINI_API_KEY) {
-            localStorage.setItem('gemini_api_key', GEMINI_API_KEY);
-            addMessage("API Key saved securely to your device.", 'ai');
+        setTimeout(() => {
+            GEMINI_API_KEY = prompt("Welcome! Please paste your Gemini API Key to activate the AI brain:");
+            if (GEMINI_API_KEY) {
+                localStorage.setItem('gemini_api_key', GEMINI_API_KEY);
+                addMessage("API Key saved securely! Ready to rock.", 'ai');
+            } else {
+                addMessage("ERROR: No API key provided. Reload page to try again.", 'ai');
+            }
+        }, 1000);
+    }
+
+    // 2. AVATAR STATE MACHINE (Animations & Timers)
+    let avatarState = 'spy'; // states: spy, animating, active
+    let menuTimeout;
+
+    function triggerWakeUp() {
+        if (avatarState !== 'spy') return; 
+        avatarState = 'animating';
+        
+        // Step 1: Slide In & Wave
+        avatar.classList.add('slide-in', 'waving');
+        
+        setTimeout(() => {
+            // Step 2: Kiss
+            avatar.classList.remove('waving');
+            avatar.classList.add('kissing');
+            
+            setTimeout(() => {
+                // Step 3: Wink
+                avatar.classList.remove('kissing');
+                avatar.classList.add('winking');
+                
+                setTimeout(() => {
+                    // Step 4: Open Menu & Start Countdown
+                    avatar.classList.remove('winking');
+                    avatarState = 'active';
+                    menu.classList.add('active');
+                    startCountdown();
+                }, 800);
+            }, 1000);
+        }, 1200);
+    }
+
+    function startCountdown() {
+        clearTimeout(menuTimeout);
+        // Start a 3-second timer
+        menuTimeout = setTimeout(() => {
+            // If nothing clicked, get sad and go away
+            menu.classList.remove('active');
+            avatar.classList.add('sad');
+            
+            setTimeout(() => {
+                avatar.classList.remove('slide-in', 'sad');
+                avatarState = 'spy';
+            }, 1000); // Wait 1 sec to show sad face, then slide out
+        }, 3000);
+    }
+
+    function executeCommand(mode) {
+        // User clicked a button! Stop the sad timer.
+        clearTimeout(menuTimeout);
+        menu.classList.remove('active');
+        
+        // Reset avatar to spy mode
+        avatar.classList.remove('slide-in');
+        avatarState = 'spy';
+
+        // Trigger the AI feature
+        if (mode === 'vision') {
+            document.getElementById('image-upload').click();
         } else {
-            addMessage("ERROR: No API key provided. Reload page to try again.", 'ai');
+            startLiveTalk(mode);
         }
     }
 
-    const chatBox = document.getElementById('chat-box');
-    const typingIndicator = document.getElementById('typing');
-    let isMenuOpen = false;
-
-    // Speech Recognition Setup
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    let currentMode = 'standard'; 
-
-    function toggleMenu() {
-        isMenuOpen = !isMenuOpen;
-        document.getElementById('fab-menu').classList.toggle('active');
-        document.getElementById('main-fab').style.transform = isMenuOpen ? "rotate(45deg)" : "rotate(0deg)";
-    }
-
+    // 3. CORE AI LOGIC
     function addMessage(text, sender, isMasti = false) {
         let div = document.createElement('div');
         div.className = `msg ${sender}-msg ${isMasti ? 'masti' : ''}`;
@@ -103,13 +186,11 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // --- TEXT-TO-SPEECH ENGINE ---
     function speakText(text, language = 'en-US') {
         const synth = window.speechSynthesis;
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = language;
         utterance.rate = 1.05;
-        
         let voices = synth.getVoices();
         if (language === 'hi-IN') {
             let indianVoice = voices.find(v => v.lang === 'hi-IN' || v.lang.includes('hi'));
@@ -118,24 +199,14 @@
         synth.speak(utterance);
     }
 
-    // ================= GEMINI API FETCH LOGIC =================
-    // This is the brain! It calls the Google endpoint securely from the browser.
     async function askGemini(promptText, systemInstruction = null, base64Image = null, mimeType = null) {
         typingIndicator.style.display = 'block';
-        
         try {
             let contents = [{ role: "user", parts: [{ text: promptText }] }];
-
-            // If an image was uploaded, attach it to the request payload
             if (base64Image) {
-                contents[0].parts.unshift({
-                    inlineData: { mimeType: mimeType, data: base64Image }
-                });
+                contents[0].parts.unshift({ inlineData: { mimeType: mimeType, data: base64Image } });
             }
-
             let payload = { contents: contents };
-
-            // If we are in Masti mode, inject the personality instructions!
             if (systemInstruction) {
                 payload.systemInstruction = { parts: [{ text: systemInstruction }] };
             }
@@ -148,26 +219,24 @@
 
             const data = await response.json();
             typingIndicator.style.display = 'none';
-            
             if(data.error) throw new Error(data.error.message);
-            
             return data.candidates[0].content.parts[0].text;
-            
         } catch (error) {
             typingIndicator.style.display = 'none';
-            console.error("Gemini Error:", error);
-            return "Sorry, I hit a snag connecting to the brain. Check console for details.";
+            console.error(error);
+            return "Connection error. Please check API Key.";
         }
     }
 
-    // ================= MODE 1: LIVE TALK & MASTI TIME =================
+    // Voice Engine
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    let currentMode = 'standard';
+
     function startLiveTalk(mode) {
         currentMode = mode;
-        toggleMenu();
-        
-        // Set listening language based on mode
         recognition.lang = (mode === 'masti') ? 'hi-IN' : 'en-US';
-        
         addMessage("Listening... 🎤", 'ai');
         recognition.start();
     }
@@ -177,42 +246,27 @@
         addMessage(spokenText, 'user');
         
         let reply = "";
-        
         if (currentMode === 'masti') {
-            // The Secret System Prompt for Hyderabadi slang!
-            let systemPrompt = "You are a chill, funny friend from Hyderabad, India. Speak entirely in heavy Hyderabadi slang (using words like baigan, ustad, yaaro, hao, nakko, kirak). Keep it brief, conversational, and very funny. Reply using the Roman Hindi/Urdu alphabet, not standard English.";
-            reply = await askGemini(spokenText, systemPrompt);
+            let sysPrompt = "You are a chill, funny friend from Hyderabad, India. Speak entirely in heavy Hyderabadi slang (using words like baigan, ustad, yaaro, hao, nakko, kirak). Keep it brief and funny. Use Roman Urdu/Hindi text.";
+            reply = await askGemini(spokenText, sysPrompt);
             addMessage(reply, 'ai', true);
             speakText(reply, 'hi-IN'); 
         } else {
-            // Standard English Assistant
-            reply = await askGemini(spokenText, "You are a helpful, concise AI assistant. Keep responses under 3 sentences.");
+            reply = await askGemini(spokenText, "You are a helpful AI assistant. Keep responses under 2 sentences.");
             addMessage(reply, 'ai');
             speakText(reply, 'en-US');
         }
     };
 
-    // ================= MODE 2: ANALYZE SCREEN (VISION) =================
-    function triggerVisionMode() {
-        toggleMenu();
-        // Clicks the hidden file input to open the phone's camera roll/file picker
-        document.getElementById('image-upload').click();
-    }
-
+    // Vision Upload Engine
     async function handleImageUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
-
         addMessage(`Analyzing image: ${file.name} 📷`, 'user');
-
-        // Convert the image to Base64 so Gemini can read it
         const reader = new FileReader();
         reader.onloadend = async () => {
             const base64String = reader.result.split(',')[1];
-            
-            let prompt = "Explain what is happening in this image. Keep it brief and conversational.";
-            let reply = await askGemini(prompt, null, base64String, file.type);
-            
+            let reply = await askGemini("Explain what is happening in this image briefly.", null, base64String, file.type);
             addMessage(reply, 'ai');
             speakText(reply, 'en-US');
         };
