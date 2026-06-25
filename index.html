@@ -22,7 +22,7 @@
     .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: #333; border-radius: 15px; color: #aaa; font-style: italic; }
 
     /* Floating Menu Options */
-    .fab-menu { position: absolute; bottom: 120px; right: 20px; display: none; flex-direction: column; gap: 10px; align-items: flex-end; z-index: 90; }
+    .fab-menu { position: absolute; bottom: 130px; right: 20px; display: none; flex-direction: column; gap: 10px; align-items: flex-end; z-index: 90; }
     .fab-menu.active { display: flex; animation: slideUp 0.3s ease; }
     @keyframes slideUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
     
@@ -30,41 +30,52 @@
     .menu-btn:hover { background: #00FF41; color: #000; }
     .menu-btn.masti-btn { border-color: #FF00FF; box-shadow: 0 5px 15px rgba(255,0,255,0.2); }
     .menu-btn.masti-btn:hover { background: #FF00FF; color: #fff; }
-    .menu-btn.setting-btn { border-color: #FFD700; box-shadow: 0 5px 15px rgba(255,215,0,0.2); }
-    .menu-btn.setting-btn:hover { background: #FFD700; color: #000; }
 
-    /* ================= NEW: AVATAR GALLERY MODAL ================= */
-    #gallery-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
-    #gallery-overlay.active { display: flex; opacity: 1; }
-    .gallery-box { background: #1a1a1a; padding: 25px; border-radius: 20px; border: 1px solid #FFD700; text-align: center; width: 85%; max-width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    #gallery-overlay.active .gallery-box { transform: translateY(0); }
-    .gallery-box h3 { margin-top: 0; color: #FFD700; font-weight: 900; letter-spacing: 1px; }
-    .gallery-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 20px; }
-    .gallery-item { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #444; cursor: pointer; transition: 0.2s; object-fit: cover; }
-    .gallery-item:hover { border-color: #00FF41; transform: scale(1.1); box-shadow: 0 0 15px rgba(0,255,65,0.4); }
-    .close-btn { background: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
-    .close-btn:hover { background: #555; }
+    /* ================= PURE CSS EILIK ROBOT ================= */
+    #robot-container { position: absolute; right: -100px; bottom: 30px; width: 80px; height: 100px; transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; z-index: 100; }
+    #robot-container.slide-in { right: 20px; }
 
-    /* ================= THE CUSTOM ANIME AVATAR ================= */
-    #avatar-container { position: absolute; right: -80px; bottom: 30px; width: 80px; height: 80px; transition: right 0.5s ease; cursor: pointer; z-index: 100; }
-    #avatar-container.slide-in { right: 0; }
+    /* The Head & Screen */
+    .head { width: 60px; height: 50px; background: #fff; border-radius: 15px; position: absolute; top: 0; left: 10px; z-index: 3; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
+    .screen { width: 50px; height: 40px; background: #111; border-radius: 10px; position: relative; border: 1px solid #333; }
+    
+    /* The Glowing Face */
+    .eye { width: 8px; height: 8px; background: #00FF41; box-shadow: 0 0 8px #00FF41; position: absolute; top: 12px; transition: all 0.2s; }
+    .eye.left { left: 10px; }
+    .eye.right { right: 10px; }
+    .mouth { width: 12px; height: 6px; border-bottom: 2px solid #00FF41; border-radius: 50%; position: absolute; bottom: 10px; left: 19px; transition: all 0.2s; box-shadow: 0 5px 5px rgba(0,255,65,0.2); }
 
-    .hand { position: absolute; width: 25px; height: 25px; background: #00FF41; border-radius: 50%; left: -12px; transition: all 0.3s; z-index: 2; box-shadow: 0 0 10px rgba(0,255,65,0.5); }
-    .hand.top { top: 10px; }
-    .hand.bottom { bottom: 10px; }
+    /* The Body & Glowing Base */
+    .body { width: 44px; height: 40px; background: #2a2b2e; border-radius: 10px 10px 5px 5px; position: absolute; top: 45px; left: 18px; z-index: 2; border-bottom: 3px solid #00FF41; box-shadow: 0 10px 15px rgba(0,255,65,0.3); transition: all 0.3s; }
 
-    .face { position: relative; width: 100%; height: 100%; border-radius: 50%; border: 3px solid #00FF41; background: #111; overflow: hidden; z-index: 3; box-shadow: -5px 5px 20px rgba(0,255,65,0.3); transition: filter 0.3s ease, transform 0.3s ease; }
-    .face img { width: 100%; height: 100%; object-fit: cover; }
+    /* The Arms */
+    .arm { width: 14px; height: 35px; background: #fff; border-radius: 10px; position: absolute; top: 45px; z-index: 1; transform-origin: top center; transition: transform 0.3s; }
+    .arm.left { left: 5px; transform: rotate(20deg); }
+    .arm.right { right: 5px; transform: rotate(-20deg); }
+    .hand { width: 10px; height: 10px; background: #111; border-radius: 50%; position: absolute; bottom: -3px; left: 2px; }
 
-    .waving .hand.top { transform-origin: right bottom; animation: waveHand 0.4s alternate 3; }
-    @keyframes waveHand { 0% { transform: rotate(0deg) translateY(0); } 100% { transform: rotate(-40deg) translateY(-10px); } }
+    /* Floating Heart for Kiss */
+    .heart { position: absolute; left: 25px; top: -10px; font-size: 1.5rem; color: #FF00FF; opacity: 0; pointer-events: none; z-index: 5; }
 
-    .heart { position: absolute; left: -10px; top: 30px; font-size: 1.5rem; color: #FF00FF; opacity: 0; pointer-events: none; z-index: 5; }
+    /* ================= ANIMATION STATES ================= */
+    /* 1. Waving (Only left arm rotates!) */
+    .waving .arm.left { animation: waveArm 0.4s alternate 3; }
+    @keyframes waveArm { 0% { transform: rotate(20deg); } 100% { transform: rotate(110deg); } }
+
+    /* 2. Kissing */
+    .kissing .mouth { width: 6px; height: 6px; border: 2px solid #00FF41; left: 22px; }
     .kissing .heart { animation: floatHeart 1s ease-out forwards; }
-    @keyframes floatHeart { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(-40px, -40px) scale(1.5); } }
+    @keyframes floatHeart { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(-30px, -40px) scale(1.5); } }
 
-    .sad .face { filter: grayscale(100%) brightness(60%); border-color: #555; transform: translateY(5px); }
-    .sad .hand { background: #555; box-shadow: none; }
+    /* 3. Winking */
+    .winking .eye.left { transform: scaleY(0.1); }
+
+    /* 4. Sad Mode */
+    .sad .mouth { border-bottom: none; border-top: 2px solid #00FF41; transform: translateY(4px); box-shadow: none; }
+    .sad .eye { transform: translateY(2px); height: 6px; box-shadow: 0 0 2px #00FF41; }
+    .sad .body { border-bottom-color: #555; box-shadow: none; }
+    .sad .arm.left { transform: rotate(10deg); }
+    .sad .arm.right { transform: rotate(-10deg); }
 
     #image-upload { display: none; }
   </style>
@@ -72,38 +83,29 @@
 <body>
 
   <div id="chat-box">
-    <div class="msg ai-msg">System ready. Tap my hands to wake me up! 👀</div>
+    <div class="msg ai-msg">System ready. Tap my white arms to wake me up! 👀</div>
   </div>
   <div class="typing-indicator" id="typing">AI is thinking...</div>
 
   <input type="file" id="image-upload" accept="image/*" onchange="handleVisionUpload(event)">
 
-  <div id="gallery-overlay">
-    <div class="gallery-box">
-      <h3>Select Companion</h3>
-      <div class="gallery-grid">
-        <img class="gallery-item" src="https://i.pinimg.com/736x/8a/8b/55/8a8b55365e6fecafbceabfa46e2fcb02.jpg" onclick="setAvatar(this.src)">
-        <img class="gallery-item" src="https://i.pinimg.com/736x/a6/5c/4b/a65c4b1897e9db8a7bfb21ea2f7d3a82.jpg" onclick="setAvatar(this.src)">
-        <img class="gallery-item" src="https://i.pinimg.com/736x/21/20/b0/2120b058cb9946e36306778243eadae5.jpg" onclick="setAvatar(this.src)">
-        <img class="gallery-item" src="https://i.pinimg.com/736x/43/66/69/4366698dc1420b72aedccf4b102b0c36.jpg" onclick="setAvatar(this.src)">
-      </div>
-      <button class="close-btn" onclick="closeGallery()">Cancel</button>
-    </div>
-  </div>
-
   <div class="fab-menu" id="fab-menu">
-    <button class="menu-btn setting-btn" onclick="executeCommand('change_avatar')">🎨 Select Anime Avatar</button>
     <button class="menu-btn" onclick="executeCommand('vision')">📷 Analyze Screen</button>
     <button class="menu-btn" onclick="executeCommand('standard')">🎤 Live Talk (English)</button>
     <button class="menu-btn masti-btn" onclick="executeCommand('masti')">🤪 Masti Time (Hyderabadi)</button>
   </div>
 
-  <div id="avatar-container" onclick="triggerWakeUp()">
-    <div class="hand top" id="hand-top"></div>
-    <div class="hand bottom" id="hand-bottom"></div>
-    <div class="face">
-      <img id="avatar-img" src="https://i.pinimg.com/736x/8a/8b/55/8a8b55365e6fecafbceabfa46e2fcb02.jpg" alt="Anime Avatar">
+  <div id="robot-container" onclick="triggerWakeUp()">
+    <div class="head">
+      <div class="screen">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+        <div class="mouth"></div>
+      </div>
     </div>
+    <div class="body"></div>
+    <div class="arm left"><div class="hand"></div></div>
+    <div class="arm right"><div class="hand"></div></div>
     <div class="heart">💖</div>
   </div>
 
@@ -111,14 +113,8 @@
     // 1. SETUP & SECURITY
     const chatBox = document.getElementById('chat-box');
     const typingIndicator = document.getElementById('typing');
-    const avatar = document.getElementById('avatar-container');
+    const robot = document.getElementById('robot-container');
     const menu = document.getElementById('fab-menu');
-    const avatarImg = document.getElementById('avatar-img');
-    const galleryOverlay = document.getElementById('gallery-overlay');
-
-    // Load custom avatar if selected previously
-    const savedAvatar = localStorage.getItem('custom_anime_avatar');
-    if (savedAvatar) { avatarImg.src = savedAvatar; }
 
     let GEMINI_API_KEY = localStorage.getItem('gemini_api_key');
     if (!GEMINI_API_KEY) {
@@ -133,22 +129,31 @@
         }, 1000);
     }
 
-    // 2. AVATAR STATE MACHINE
-    let avatarState = 'spy';
+    // 2. ROBOT STATE MACHINE
+    let robotState = 'spy';
     let menuTimeout;
 
     function triggerWakeUp() {
-        if (avatarState !== 'spy') return; 
-        avatarState = 'animating';
-        avatar.classList.add('slide-in', 'waving');
+        if (robotState !== 'spy') return; 
+        robotState = 'animating';
+        
+        // Slide in and wave the left arm
+        robot.classList.add('slide-in', 'waving');
+        
         setTimeout(() => {
-            avatar.classList.remove('waving');
-            avatar.classList.add('kissing');
+            robot.classList.remove('waving');
+            robot.classList.add('kissing'); // Mouth changes, heart floats
+            
             setTimeout(() => {
-                avatar.classList.remove('kissing');
-                avatarState = 'active';
-                menu.classList.add('active');
-                startCountdown();
+                robot.classList.remove('kissing');
+                robot.classList.add('winking'); // Left eye blinks
+                
+                setTimeout(() => {
+                    robot.classList.remove('winking');
+                    robotState = 'active';
+                    menu.classList.add('active');
+                    startCountdown();
+                }, 500);
             }, 1000);
         }, 1200);
     }
@@ -157,10 +162,11 @@
         clearTimeout(menuTimeout);
         menuTimeout = setTimeout(() => {
             menu.classList.remove('active');
-            avatar.classList.add('sad'); 
+            robot.classList.add('sad'); // Eyes droop, smile flips, glow fades
+            
             setTimeout(() => {
-                avatar.classList.remove('slide-in', 'sad');
-                avatarState = 'spy';
+                robot.classList.remove('slide-in', 'sad');
+                robotState = 'spy';
             }, 1500); 
         }, 3000);
     }
@@ -168,35 +174,14 @@
     function executeCommand(mode) {
         clearTimeout(menuTimeout);
         menu.classList.remove('active');
-        avatar.classList.remove('slide-in');
-        avatarState = 'spy';
+        robot.classList.remove('slide-in');
+        robotState = 'spy';
 
-        if (mode === 'change_avatar') {
-            openGallery();
-        } else if (mode === 'vision') {
+        if (mode === 'vision') {
             document.getElementById('image-upload').click();
         } else {
             startLiveTalk(mode);
         }
-    }
-
-    // --- NEW: GALLERY LOGIC ---
-    function openGallery() {
-        galleryOverlay.style.display = 'flex';
-        // Small delay to allow display block to apply before changing opacity for smooth fade
-        setTimeout(() => galleryOverlay.classList.add('active'), 10);
-    }
-
-    function closeGallery() {
-        galleryOverlay.classList.remove('active');
-        setTimeout(() => galleryOverlay.style.display = 'none', 300);
-    }
-
-    function setAvatar(imgUrl) {
-        avatarImg.src = imgUrl;
-        localStorage.setItem('custom_anime_avatar', imgUrl);
-        addMessage("Companion identity updated successfully! 🎨", 'ai');
-        closeGallery();
     }
 
     // 3. CORE AI LOGIC
