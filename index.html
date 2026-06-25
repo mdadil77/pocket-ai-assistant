@@ -12,14 +12,25 @@
   <style>
     body { margin: 0; font-family: 'Inter', sans-serif; background: #121212; color: #fff; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
     
-    /* Core Chat UI */
-    #chat-box { width: 90%; max-width: 500px; height: 60vh; background: #1e1e1e; border-radius: 20px; padding: 20px; box-sizing: border-box; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 15px; border: 1px solid #333; }
-    .msg { padding: 12px 18px; border-radius: 15px; max-width: 80%; font-size: 1.1rem; line-height: 1.4; animation: popIn 0.3s ease; }
+    /* NEW: Core Chat Container layout */
+    #chat-container { width: 90%; max-width: 500px; height: 75vh; background: #1a1a1a; border-radius: 20px; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; border: 1px solid #333; overflow: hidden; z-index: 10; }
+    
+    #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+    
+    .msg { padding: 12px 18px; border-radius: 15px; max-width: 80%; font-size: 1.1rem; line-height: 1.4; animation: popIn 0.3s ease; word-wrap: break-word; }
     @keyframes popIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
     .user-msg { background: #00FF41; color: #000; align-self: flex-end; border-bottom-right-radius: 2px; font-weight: bold; }
     .ai-msg { background: #333; color: #fff; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #444; }
     .ai-msg.masti { background: #FF00FF; color: #fff; border: none; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-    .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: #333; border-radius: 15px; color: #aaa; font-style: italic; }
+    
+    .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: #333; border-radius: 15px; color: #aaa; font-style: italic; margin-left: 20px; margin-bottom: 10px;}
+
+    /* NEW: Text Input Area */
+    #input-area { display: flex; padding: 15px; background: #222; border-top: 1px solid #333; gap: 10px; align-items: center; }
+    #user-input { flex: 1; padding: 15px; border-radius: 25px; border: 1px solid #444; background: #111; color: #fff; font-size: 1rem; font-family: 'Inter', sans-serif; outline: none; transition: 0.2s; }
+    #user-input:focus { border-color: #00FF41; box-shadow: 0 0 10px rgba(0,255,65,0.2); }
+    #send-btn { background: #00FF41; color: #000; font-weight: bold; border: none; padding: 0 20px; height: 50px; border-radius: 25px; cursor: pointer; font-size: 1rem; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,255,65,0.2); }
+    #send-btn:active { transform: scale(0.95); }
 
     /* Floating Menu Options */
     .fab-menu { position: absolute; bottom: 130px; right: 20px; display: none; flex-direction: column; gap: 10px; align-items: flex-end; z-index: 90; }
@@ -31,46 +42,34 @@
     .menu-btn.masti-btn { border-color: #FF00FF; box-shadow: 0 5px 15px rgba(255,0,255,0.2); }
     .menu-btn.masti-btn:hover { background: #FF00FF; color: #fff; }
 
-    /* ================= PURE CSS EILIK ROBOT ================= */
-    #robot-container { position: absolute; right: -100px; bottom: 30px; width: 80px; height: 100px; transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; z-index: 100; }
+    /* PURE CSS EILIK ROBOT */
+    #robot-container { position: absolute; right: -100px; bottom: 110px; width: 80px; height: 100px; transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; z-index: 100; }
     #robot-container.slide-in { right: 20px; }
 
-    /* The Head & Screen */
     .head { width: 60px; height: 50px; background: #fff; border-radius: 15px; position: absolute; top: 0; left: 10px; z-index: 3; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
     .screen { width: 50px; height: 40px; background: #111; border-radius: 10px; position: relative; border: 1px solid #333; }
     
-    /* The Glowing Face */
     .eye { width: 8px; height: 8px; background: #00FF41; box-shadow: 0 0 8px #00FF41; position: absolute; top: 12px; transition: all 0.2s; }
     .eye.left { left: 10px; }
     .eye.right { right: 10px; }
     .mouth { width: 12px; height: 6px; border-bottom: 2px solid #00FF41; border-radius: 50%; position: absolute; bottom: 10px; left: 19px; transition: all 0.2s; box-shadow: 0 5px 5px rgba(0,255,65,0.2); }
 
-    /* The Body & Glowing Base */
     .body { width: 44px; height: 40px; background: #2a2b2e; border-radius: 10px 10px 5px 5px; position: absolute; top: 45px; left: 18px; z-index: 2; border-bottom: 3px solid #00FF41; box-shadow: 0 10px 15px rgba(0,255,65,0.3); transition: all 0.3s; }
 
-    /* The Arms */
     .arm { width: 14px; height: 35px; background: #fff; border-radius: 10px; position: absolute; top: 45px; z-index: 1; transform-origin: top center; transition: transform 0.3s; }
     .arm.left { left: 5px; transform: rotate(20deg); }
     .arm.right { right: 5px; transform: rotate(-20deg); }
     .hand { width: 10px; height: 10px; background: #111; border-radius: 50%; position: absolute; bottom: -3px; left: 2px; }
 
-    /* Floating Heart for Kiss */
     .heart { position: absolute; left: 25px; top: -10px; font-size: 1.5rem; color: #FF00FF; opacity: 0; pointer-events: none; z-index: 5; }
 
-    /* ================= ANIMATION STATES ================= */
-    /* 1. Waving (Only left arm rotates!) */
+    /* ANIMATION STATES */
     .waving .arm.left { animation: waveArm 0.4s alternate 3; }
     @keyframes waveArm { 0% { transform: rotate(20deg); } 100% { transform: rotate(110deg); } }
-
-    /* 2. Kissing */
     .kissing .mouth { width: 6px; height: 6px; border: 2px solid #00FF41; left: 22px; }
     .kissing .heart { animation: floatHeart 1s ease-out forwards; }
     @keyframes floatHeart { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(-30px, -40px) scale(1.5); } }
-
-    /* 3. Winking */
     .winking .eye.left { transform: scaleY(0.1); }
-
-    /* 4. Sad Mode */
     .sad .mouth { border-bottom: none; border-top: 2px solid #00FF41; transform: translateY(4px); box-shadow: none; }
     .sad .eye { transform: translateY(2px); height: 6px; box-shadow: 0 0 2px #00FF41; }
     .sad .body { border-bottom-color: #555; box-shadow: none; }
@@ -82,10 +81,17 @@
 </head>
 <body>
 
-  <div id="chat-box">
-    <div class="msg ai-msg">System ready. Tap my white arms to wake me up! 👀</div>
+  <div id="chat-container">
+    <div id="chat-box">
+      <div class="msg ai-msg">System ready. Type below, or tap my white arms to wake me up! 👀</div>
+    </div>
+    <div class="typing-indicator" id="typing">AI is thinking...</div>
+    
+    <div id="input-area">
+      <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
+      <button id="send-btn" onclick="sendText()">Send</button>
+    </div>
   </div>
-  <div class="typing-indicator" id="typing">AI is thinking...</div>
 
   <input type="file" id="image-upload" accept="image/*" onchange="handleVisionUpload(event)">
 
@@ -115,6 +121,7 @@
     const typingIndicator = document.getElementById('typing');
     const robot = document.getElementById('robot-container');
     const menu = document.getElementById('fab-menu');
+    const userInput = document.getElementById('user-input');
 
     let GEMINI_API_KEY = localStorage.getItem('gemini_api_key');
     if (!GEMINI_API_KEY) {
@@ -129,6 +136,34 @@
         }, 1000);
     }
 
+    // --- NEW: TEXT CHAT LOGIC ---
+    async function sendText() {
+        const text = userInput.value.trim();
+        if (!text) return; // Stop if empty
+
+        userInput.value = ''; // Clear input box
+        addMessage(text, 'user');
+
+        // Wake robot up briefly so it looks alive while typing
+        robot.classList.add('slide-in'); 
+
+        let reply = await askGemini(text, "You are a helpful AI assistant. Keep responses under 2 sentences.");
+        addMessage(reply, 'ai');
+        speakText(reply, 'en-US');
+
+        // Send robot back to spy mode
+        setTimeout(() => {
+             robot.classList.remove('slide-in');
+        }, 3000);
+    }
+
+    // Trigger send button if user hits "Enter" on keyboard
+    userInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendText();
+        }
+    });
+
     // 2. ROBOT STATE MACHINE
     let robotState = 'spy';
     let menuTimeout;
@@ -137,16 +172,15 @@
         if (robotState !== 'spy') return; 
         robotState = 'animating';
         
-        // Slide in and wave the left arm
         robot.classList.add('slide-in', 'waving');
         
         setTimeout(() => {
             robot.classList.remove('waving');
-            robot.classList.add('kissing'); // Mouth changes, heart floats
+            robot.classList.add('kissing');
             
             setTimeout(() => {
                 robot.classList.remove('kissing');
-                robot.classList.add('winking'); // Left eye blinks
+                robot.classList.add('winking');
                 
                 setTimeout(() => {
                     robot.classList.remove('winking');
@@ -162,7 +196,7 @@
         clearTimeout(menuTimeout);
         menuTimeout = setTimeout(() => {
             menu.classList.remove('active');
-            robot.classList.add('sad'); // Eyes droop, smile flips, glow fades
+            robot.classList.add('sad');
             
             setTimeout(() => {
                 robot.classList.remove('slide-in', 'sad');
