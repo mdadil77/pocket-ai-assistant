@@ -30,38 +30,42 @@
     .menu-btn:hover { background: #00FF41; color: #000; }
     .menu-btn.masti-btn { border-color: #FF00FF; box-shadow: 0 5px 15px rgba(255,0,255,0.2); }
     .menu-btn.masti-btn:hover { background: #FF00FF; color: #fff; }
+    .menu-btn.setting-btn { border-color: #FFD700; box-shadow: 0 5px 15px rgba(255,215,0,0.2); }
+    .menu-btn.setting-btn:hover { background: #FFD700; color: #000; }
 
-    /* ================= THE ANIMATED AVATAR ================= */
-    /* Container hides off-screen (Spy Mode) */
-    #avatar-container { position: absolute; right: -80px; bottom: 30px; width: 80px; height: 80px; background: #00FF41; border-radius: 40px 0 0 40px; transition: right 0.5s ease; cursor: pointer; z-index: 100; box-shadow: -5px 5px 20px rgba(0,255,65,0.3); }
+    /* ================= NEW: AVATAR GALLERY MODAL ================= */
+    #gallery-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+    #gallery-overlay.active { display: flex; opacity: 1; }
+    .gallery-box { background: #1a1a1a; padding: 25px; border-radius: 20px; border: 1px solid #FFD700; text-align: center; width: 85%; max-width: 350px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    #gallery-overlay.active .gallery-box { transform: translateY(0); }
+    .gallery-box h3 { margin-top: 0; color: #FFD700; font-weight: 900; letter-spacing: 1px; }
+    .gallery-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .gallery-item { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #444; cursor: pointer; transition: 0.2s; object-fit: cover; }
+    .gallery-item:hover { border-color: #00FF41; transform: scale(1.1); box-shadow: 0 0 15px rgba(0,255,65,0.4); }
+    .close-btn { background: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
+    .close-btn:hover { background: #555; }
+
+    /* ================= THE CUSTOM ANIME AVATAR ================= */
+    #avatar-container { position: absolute; right: -80px; bottom: 30px; width: 80px; height: 80px; transition: right 0.5s ease; cursor: pointer; z-index: 100; }
     #avatar-container.slide-in { right: 0; }
 
-    /* The Hands peeking out */
-    .hand { position: absolute; width: 25px; height: 25px; background: #00cc33; border-radius: 50%; left: -12px; transition: all 0.3s; }
-    .hand.top { top: 15px; }
-    .hand.bottom { bottom: 15px; }
+    .hand { position: absolute; width: 25px; height: 25px; background: #00FF41; border-radius: 50%; left: -12px; transition: all 0.3s; z-index: 2; box-shadow: 0 0 10px rgba(0,255,65,0.5); }
+    .hand.top { top: 10px; }
+    .hand.bottom { bottom: 10px; }
 
-    /* The Face */
-    .face { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
-    .eyes { display: flex; gap: 10px; }
-    .eye { width: 12px; height: 16px; background: #000; border-radius: 50%; transition: all 0.2s; }
-    .mouth { width: 20px; height: 8px; background: #000; border-radius: 0 0 10px 10px; transition: all 0.2s; }
+    .face { position: relative; width: 100%; height: 100%; border-radius: 50%; border: 3px solid #00FF41; background: #111; overflow: hidden; z-index: 3; box-shadow: -5px 5px 20px rgba(0,255,65,0.3); transition: filter 0.3s ease, transform 0.3s ease; }
+    .face img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Animations Classes */
     .waving .hand.top { transform-origin: right bottom; animation: waveHand 0.4s alternate 3; }
     @keyframes waveHand { 0% { transform: rotate(0deg) translateY(0); } 100% { transform: rotate(-40deg) translateY(-10px); } }
 
-    .kissing .mouth { width: 10px; height: 10px; border-radius: 50%; }
-    .heart { position: absolute; left: -10px; top: 30px; font-size: 1.5rem; color: #FF00FF; opacity: 0; pointer-events: none; }
+    .heart { position: absolute; left: -10px; top: 30px; font-size: 1.5rem; color: #FF00FF; opacity: 0; pointer-events: none; z-index: 5; }
     .kissing .heart { animation: floatHeart 1s ease-out forwards; }
     @keyframes floatHeart { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(-40px, -40px) scale(1.5); } }
 
-    .winking .eye.left { transform: scaleY(0.1); }
-    
-    .sad .eye { transform: rotate(-15deg); height: 10px; margin-top: 5px; }
-    .sad .mouth { border-radius: 10px 10px 0 0; transform: translateY(5px); }
+    .sad .face { filter: grayscale(100%) brightness(60%); border-color: #555; transform: translateY(5px); }
+    .sad .hand { background: #555; box-shadow: none; }
 
-    /* Hidden File Input */
     #image-upload { display: none; }
   </style>
 </head>
@@ -72,10 +76,24 @@
   </div>
   <div class="typing-indicator" id="typing">AI is thinking...</div>
 
-  <input type="file" id="image-upload" accept="image/*" onchange="handleImageUpload(event)">
+  <input type="file" id="image-upload" accept="image/*" onchange="handleVisionUpload(event)">
+
+  <div id="gallery-overlay">
+    <div class="gallery-box">
+      <h3>Select Companion</h3>
+      <div class="gallery-grid">
+        <img class="gallery-item" src="https://i.pinimg.com/736x/8a/8b/55/8a8b55365e6fecafbceabfa46e2fcb02.jpg" onclick="setAvatar(this.src)">
+        <img class="gallery-item" src="https://i.pinimg.com/736x/a6/5c/4b/a65c4b1897e9db8a7bfb21ea2f7d3a82.jpg" onclick="setAvatar(this.src)">
+        <img class="gallery-item" src="https://i.pinimg.com/736x/21/20/b0/2120b058cb9946e36306778243eadae5.jpg" onclick="setAvatar(this.src)">
+        <img class="gallery-item" src="https://i.pinimg.com/736x/43/66/69/4366698dc1420b72aedccf4b102b0c36.jpg" onclick="setAvatar(this.src)">
+      </div>
+      <button class="close-btn" onclick="closeGallery()">Cancel</button>
+    </div>
+  </div>
 
   <div class="fab-menu" id="fab-menu">
-    <button class="menu-btn" onclick="executeCommand('vision')">📷 Analyze Screen (Upload)</button>
+    <button class="menu-btn setting-btn" onclick="executeCommand('change_avatar')">🎨 Select Anime Avatar</button>
+    <button class="menu-btn" onclick="executeCommand('vision')">📷 Analyze Screen</button>
     <button class="menu-btn" onclick="executeCommand('standard')">🎤 Live Talk (English)</button>
     <button class="menu-btn masti-btn" onclick="executeCommand('masti')">🤪 Masti Time (Hyderabadi)</button>
   </div>
@@ -84,21 +102,23 @@
     <div class="hand top" id="hand-top"></div>
     <div class="hand bottom" id="hand-bottom"></div>
     <div class="face">
-      <div class="eyes">
-        <div class="eye left"></div>
-        <div class="eye right"></div>
-      </div>
-      <div class="mouth"></div>
+      <img id="avatar-img" src="https://i.pinimg.com/736x/8a/8b/55/8a8b55365e6fecafbceabfa46e2fcb02.jpg" alt="Anime Avatar">
     </div>
     <div class="heart">💖</div>
   </div>
 
   <script>
-    // 1. SETUP & SECURITY (Fixed Order)
+    // 1. SETUP & SECURITY
     const chatBox = document.getElementById('chat-box');
     const typingIndicator = document.getElementById('typing');
     const avatar = document.getElementById('avatar-container');
     const menu = document.getElementById('fab-menu');
+    const avatarImg = document.getElementById('avatar-img');
+    const galleryOverlay = document.getElementById('gallery-overlay');
+
+    // Load custom avatar if selected previously
+    const savedAvatar = localStorage.getItem('custom_anime_avatar');
+    if (savedAvatar) { avatarImg.src = savedAvatar; }
 
     let GEMINI_API_KEY = localStorage.getItem('gemini_api_key');
     if (!GEMINI_API_KEY) {
@@ -113,68 +133,70 @@
         }, 1000);
     }
 
-    // 2. AVATAR STATE MACHINE (Animations & Timers)
-    let avatarState = 'spy'; // states: spy, animating, active
+    // 2. AVATAR STATE MACHINE
+    let avatarState = 'spy';
     let menuTimeout;
 
     function triggerWakeUp() {
         if (avatarState !== 'spy') return; 
         avatarState = 'animating';
-        
-        // Step 1: Slide In & Wave
         avatar.classList.add('slide-in', 'waving');
-        
         setTimeout(() => {
-            // Step 2: Kiss
             avatar.classList.remove('waving');
             avatar.classList.add('kissing');
-            
             setTimeout(() => {
-                // Step 3: Wink
                 avatar.classList.remove('kissing');
-                avatar.classList.add('winking');
-                
-                setTimeout(() => {
-                    // Step 4: Open Menu & Start Countdown
-                    avatar.classList.remove('winking');
-                    avatarState = 'active';
-                    menu.classList.add('active');
-                    startCountdown();
-                }, 800);
+                avatarState = 'active';
+                menu.classList.add('active');
+                startCountdown();
             }, 1000);
         }, 1200);
     }
 
     function startCountdown() {
         clearTimeout(menuTimeout);
-        // Start a 3-second timer
         menuTimeout = setTimeout(() => {
-            // If nothing clicked, get sad and go away
             menu.classList.remove('active');
-            avatar.classList.add('sad');
-            
+            avatar.classList.add('sad'); 
             setTimeout(() => {
                 avatar.classList.remove('slide-in', 'sad');
                 avatarState = 'spy';
-            }, 1000); // Wait 1 sec to show sad face, then slide out
+            }, 1500); 
         }, 3000);
     }
 
     function executeCommand(mode) {
-        // User clicked a button! Stop the sad timer.
         clearTimeout(menuTimeout);
         menu.classList.remove('active');
-        
-        // Reset avatar to spy mode
         avatar.classList.remove('slide-in');
         avatarState = 'spy';
 
-        // Trigger the AI feature
-        if (mode === 'vision') {
+        if (mode === 'change_avatar') {
+            openGallery();
+        } else if (mode === 'vision') {
             document.getElementById('image-upload').click();
         } else {
             startLiveTalk(mode);
         }
+    }
+
+    // --- NEW: GALLERY LOGIC ---
+    function openGallery() {
+        galleryOverlay.style.display = 'flex';
+        // Small delay to allow display block to apply before changing opacity for smooth fade
+        setTimeout(() => galleryOverlay.classList.add('active'), 10);
+    }
+
+    function closeGallery() {
+        galleryOverlay.classList.remove('active');
+        setTimeout(() => galleryOverlay.style.display = 'none', 300);
+    }
+
+    function setAvatar(imgUrl) {
+        avatarImg.src = imgUrl;
+        localStorage.setItem('custom_anime_avatar', imgUrl);
+        addMessage("Companion identity updated successfully! 🎨", 'ai');
+        closeGallery();
     }
 
     // 3. CORE AI LOGIC
@@ -210,13 +232,9 @@
             if (systemInstruction) {
                 payload.systemInstruction = { parts: [{ text: systemInstruction }] };
             }
-
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
+                method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
             });
-
             const data = await response.json();
             typingIndicator.style.display = 'none';
             if(data.error) throw new Error(data.error.message);
@@ -228,7 +246,6 @@
         }
     }
 
-    // Voice Engine
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
@@ -244,7 +261,6 @@
     recognition.onresult = async (event) => {
         const spokenText = event.results[0][0].transcript;
         addMessage(spokenText, 'user');
-        
         let reply = "";
         if (currentMode === 'masti') {
             let sysPrompt = "You are a chill, funny friend from Hyderabad, India. Speak entirely in heavy Hyderabadi slang (using words like baigan, ustad, yaaro, hao, nakko, kirak). Keep it brief and funny. Use Roman Urdu/Hindi text.";
@@ -258,8 +274,7 @@
         }
     };
 
-    // Vision Upload Engine
-    async function handleImageUpload(event) {
+    async function handleVisionUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
         addMessage(`Analyzing image: ${file.name} 📷`, 'user');
