@@ -12,20 +12,21 @@
   <style>
     body { margin: 0; font-family: 'Inter', sans-serif; background: #121212; color: #fff; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
     
-    /* NEW: Core Chat Container layout */
+    /* Core Chat Container */
     #chat-container { width: 90%; max-width: 500px; height: 75vh; background: #1a1a1a; border-radius: 20px; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; border: 1px solid #333; overflow: hidden; z-index: 10; }
-    
     #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
     
+    /* Messages */
     .msg { padding: 12px 18px; border-radius: 15px; max-width: 80%; font-size: 1.1rem; line-height: 1.4; animation: popIn 0.3s ease; word-wrap: break-word; }
     @keyframes popIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
     .user-msg { background: #00FF41; color: #000; align-self: flex-end; border-bottom-right-radius: 2px; font-weight: bold; }
     .ai-msg { background: #333; color: #fff; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #444; }
     .ai-msg.masti { background: #FF00FF; color: #fff; border: none; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+    .ai-msg.error { background: #ff3333; color: #fff; border: none; }
     
     .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: #333; border-radius: 15px; color: #aaa; font-style: italic; margin-left: 20px; margin-bottom: 10px;}
 
-    /* NEW: Text Input Area */
+    /* Text Input Area */
     #input-area { display: flex; padding: 15px; background: #222; border-top: 1px solid #333; gap: 10px; align-items: center; }
     #user-input { flex: 1; padding: 15px; border-radius: 25px; border: 1px solid #444; background: #111; color: #fff; font-size: 1rem; font-family: 'Inter', sans-serif; outline: none; transition: 0.2s; }
     #user-input:focus { border-color: #00FF41; box-shadow: 0 0 10px rgba(0,255,65,0.2); }
@@ -66,16 +67,20 @@
     /* ANIMATION STATES */
     .waving .arm.left { animation: waveArm 0.4s alternate 3; }
     @keyframes waveArm { 0% { transform: rotate(20deg); } 100% { transform: rotate(110deg); } }
+    
     .kissing .mouth { width: 6px; height: 6px; border: 2px solid #00FF41; left: 22px; }
     .kissing .heart { animation: floatHeart 1s ease-out forwards; }
     @keyframes floatHeart { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(-30px, -40px) scale(1.5); } }
+    
     .winking .eye.left { transform: scaleY(0.1); }
+    
     .sad .mouth { border-bottom: none; border-top: 2px solid #00FF41; transform: translateY(4px); box-shadow: none; }
     .sad .eye { transform: translateY(2px); height: 6px; box-shadow: 0 0 2px #00FF41; }
     .sad .body { border-bottom-color: #555; box-shadow: none; }
     .sad .arm.left { transform: rotate(10deg); }
     .sad .arm.right { transform: rotate(-10deg); }
 
+    /* Hidden Utilities */
     #image-upload { display: none; }
   </style>
 </head>
@@ -131,40 +136,35 @@
                 localStorage.setItem('gemini_api_key', GEMINI_API_KEY);
                 addMessage("API Key saved securely! Ready to rock.", 'ai');
             } else {
-                addMessage("ERROR: No API key provided. Reload page to try again.", 'ai');
+                addMessage("ERROR: No API key provided. Reload page to try again.", 'ai', false, true);
             }
         }, 1000);
     }
 
-    // --- NEW: TEXT CHAT LOGIC ---
+    // 2. TEXT CHAT LOGIC
     async function sendText() {
         const text = userInput.value.trim();
-        if (!text) return; // Stop if empty
+        if (!text) return; 
 
-        userInput.value = ''; // Clear input box
+        userInput.value = ''; 
         addMessage(text, 'user');
 
-        // Wake robot up briefly so it looks alive while typing
         robot.classList.add('slide-in'); 
 
         let reply = await askGemini(text, "You are a helpful AI assistant. Keep responses under 2 sentences.");
         addMessage(reply, 'ai');
         speakText(reply, 'en-US');
 
-        // Send robot back to spy mode
         setTimeout(() => {
-             robot.classList.remove('slide-in');
+            if(robotState === 'spy') robot.classList.remove('slide-in');
         }, 3000);
     }
 
-    // Trigger send button if user hits "Enter" on keyboard
     userInput.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            sendText();
-        }
+        if (e.key === 'Enter') sendText();
     });
 
-    // 2. ROBOT STATE MACHINE
+    // 3. ROBOT STATE MACHINE
     let robotState = 'spy';
     let menuTimeout;
 
@@ -218,10 +218,10 @@
         }
     }
 
-    // 3. CORE AI LOGIC
-    function addMessage(text, sender, isMasti = false) {
+    // 4. CORE AI LOGIC
+    function addMessage(text, sender, isMasti = false, isError = false) {
         let div = document.createElement('div');
-        div.className = `msg ${sender}-msg ${isMasti ? 'masti' : ''}`;
+        div.className = `msg ${sender}-msg ${isMasti ? 'masti' : ''} ${isError ? 'error' : ''}`;
         div.innerText = text;
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -265,10 +265,16 @@
         }
     }
 
+    // 5. VOICE ENGINE & MIC ERROR CATCHER
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     let currentMode = 'standard';
+
+    // Catch Mic Errors Here!
+    recognition.onerror = function(event) {
+        addMessage("Mic Error: " + event.error + ". Are you in Incognito? Make sure mic is allowed!", 'ai', false, true);
+    };
 
     function startLiveTalk(mode) {
         currentMode = mode;
@@ -293,6 +299,7 @@
         }
     };
 
+    // 6. VISION ENGINE
     async function handleVisionUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
