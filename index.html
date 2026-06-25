@@ -44,7 +44,8 @@
     .menu-btn.masti-btn:hover { background: #FF00FF; color: #fff; }
 
     /* PURE CSS EILIK ROBOT */
-    #robot-container { position: absolute; right: -100px; bottom: 110px; width: 80px; height: 100px; transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; z-index: 100; }
+    /* FIXED: right is now -60px so hands peek out! */
+    #robot-container { position: absolute; right: -60px; bottom: 110px; width: 80px; height: 100px; transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; z-index: 100; }
     #robot-container.slide-in { right: 20px; }
 
     .head { width: 60px; height: 50px; background: #fff; border-radius: 15px; position: absolute; top: 0; left: 10px; z-index: 3; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
@@ -127,8 +128,6 @@
     const menu = document.getElementById('fab-menu');
     const userInput = document.getElementById('user-input');
 
-    // ALL LOCAL STORAGE API KEY LOGIC IS COMPLETELY DELETED!
-
     // 1. TEXT CHAT LOGIC
     async function sendText() {
         const text = userInput.value.trim();
@@ -143,7 +142,6 @@
         addMessage(reply, 'ai');
         speakText(reply, 'en-US');
 
-        // UPGRADED TO 5 SECONDS
         setTimeout(() => {
             if(robotState === 'spy') robot.classList.remove('slide-in');
         }, 5000); 
@@ -241,7 +239,7 @@
                 payload.systemInstruction = { parts: [{ text: systemInstruction }] };
             }
             
-            // CALLING YOUR VERCEL BACKEND INSTEAD OF GOOGLE
+            // CALLING YOUR VERCEL BACKEND
             const response = await fetch(`/api/chat`, {
                 method: "POST", 
                 headers: { "Content-Type": "application/json" }, 
