@@ -3,356 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#121212">
-  <title>Pocket AI Assistant</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-  
-  <style>
-    body { margin: 0; font-family: 'Inter', sans-serif; background: #121212; color: #fff; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-    
-    /* Core Chat Container */
-    #chat-container { width: 90%; max-width: 500px; height: 75vh; background: #1a1a1a; border-radius: 20px; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; border: 1px solid #333; overflow: hidden; z-index: 10; }
-    #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-    
-    /* Messages */
-    .msg { padding: 12px 18px; border-radius: 15px; max-width: 80%; font-size: 1.1rem; line-height: 1.4; animation: popIn 0.3s ease; word-wrap: break-word; }
-    @keyframes popIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
-    .user-msg { background: #00FF41; color: #000; align-self: flex-end; border-bottom-right-radius: 2px; font-weight: bold; }
-    .ai-msg { background: #333; color: #fff; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #444; }
-    .ai-msg.masti { background: #FF00FF; color: #fff; border: none; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-    .ai-msg.error { background: #ff3333; color: #fff; border: none; }
-    
-    .typing-indicator { display: none; align-self: flex-start; padding: 12px 18px; background: #333; border-radius: 15px; color: #aaa; font-style: italic; margin-left: 20px; margin-bottom: 10px;}
-
-    /* Text Input Area */
-    #input-area { display: flex; padding: 15px; background: #222; border-top: 1px solid #333; gap: 10px; align-items: center; }
-    #user-input { flex: 1; padding: 15px; border-radius: 25px; border: 1px solid #444; background: #111; color: #fff; font-size: 1rem; font-family: 'Inter', sans-serif; outline: none; transition: 0.2s; }
-    #user-input:focus { border-color: #00FF41; box-shadow: 0 0 10px rgba(0,255,65,0.2); }
-    #send-btn { background: #00FF41; color: #000; font-weight: bold; border: none; padding: 0 20px; height: 50px; border-radius: 25px; cursor: pointer; font-size: 1rem; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,255,65,0.2); }
-    #send-btn:active { transform: scale(0.95); }
-
-    /* Floating Menu Options */
-    .fab-menu { position: absolute; bottom: 130px; right: 20px; display: none; flex-direction: column; gap: 10px; align-items: flex-end; z-index: 90; }
-    .fab-menu.active { display: flex; animation: slideUp 0.3s ease; }
-    @keyframes slideUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
-    
-    .menu-btn { background: #222; color: #fff; padding: 12px 20px; border-radius: 30px; border: 1px solid #00FF41; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 5px 15px rgba(0,255,65,0.2); transition: 0.2s; white-space: nowrap; }
-    .menu-btn:hover { background: #00FF41; color: #000; }
-    .menu-btn.masti-btn { border-color: #FF00FF; box-shadow: 0 5px 15px rgba(255,0,255,0.2); }
-    .menu-btn.masti-btn:hover { background: #FF00FF; color: #fff; }
-
-    /* MODERN UPGRADED SVG ROBOT CONTAINER */
-    #robot-container { position: absolute; right: -60px; bottom: 110px; width: 80px; height: 100px; transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; z-index: 100; display: flex; flex-direction: column; align-items: center; }
-    #robot-container.slide-in { right: 20px; }
-
-    .head { width: 68px; height: 56px; position: relative; z-index: 3; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.4)); }
-    .body { width: 44px; height: 38px; background: #2a2b2e; border-radius: 10px 10px 5px 5px; position: absolute; top: 46px; z-index: 2; border-bottom: 3px solid #00FF41; box-shadow: 0 8px 12px rgba(0,255,65,0.2); transition: all 0.3s; }
-
-    .arm { width: 12px; height: 32px; background: #fff; border-radius: 10px; position: absolute; top: 46px; z-index: 1; transform-origin: top center; transition: transform 0.3s; }
-    .arm.left { left: 6px; transform: rotate(20deg); }
-    .arm.right { right: 6px; transform: rotate(-20deg); }
-    .hand { width: 10px; height: 10px; background: #111; border-radius: 50%; position: absolute; bottom: -3px; left: 1px; }
-
-    .heart { position: absolute; left: 25px; top: -15px; font-size: 1.5rem; color: #FF00FF; opacity: 0; pointer-events: none; z-index: 5; }
-
-    /* ANIMATION KEYFRAMES & TRIGGER STATES */
-    .waving .arm.left { animation: waveArm 0.4s alternate 3; }
-    @keyframes waveArm { 0% { transform: rotate(20deg); } 100% { transform: rotate(110deg); } }
-    
-    .kissing .heart { animation: floatHeart 1s ease-out forwards; }
-    @keyframes floatHeart { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(-30px, -40px) scale(1.5); } }
-    
-    .sad .body { border-bottom-color: #555; box-shadow: none; }
-    .sad .arm.left { transform: rotate(10deg); }
-    .sad .arm.right { transform: rotate(-10deg); }
-
-    #image-upload { display: none; }
-  </style>
+  <meta name="theme-color" content="#17110d">
+  <title>Pocket AI — Street Edition (3D)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <div id="chat-container">
-    <div id="chat-box">
-      <div class="msg ai-msg">System ready. Tap my face to see an animation and wake me up! 👀</div>
+    <div id="chat-header">
+      <span class="dot"></span> Pocket AI <span class="mode-label" id="mode-label">Street Mode</span>
     </div>
-    <div class="typing-indicator" id="typing">AI is thinking...</div>
-    
+    <div id="chat-box">
+      <div class="msg ai-msg">Arre suno! Tap the character in the corner to wake it up. Pick your vibe, then hit a mood button below. 👀</div>
+    </div>
+    <div class="typing-indicator" id="typing">thinking<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+
     <div id="input-area">
-      <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
-      <button id="send-btn" onclick="sendText()">Send</button>
+      <input type="text" id="user-input" placeholder="Type kuch bhi... (EN / HI / UR)" autocomplete="off">
+      <button id="send-btn" onclick="sendText()">➤</button>
     </div>
   </div>
 
   <input type="file" id="image-upload" accept="image/*" onchange="handleVisionUpload(event)">
 
+  <!-- MOOD MENU -->
   <div class="fab-menu" id="fab-menu">
     <button class="menu-btn" onclick="executeCommand('vision')">📷 Analyze Screen</button>
-    <button class="menu-btn" onclick="executeCommand('standard')">🎤 Live Talk (English)</button>
-    <button class="menu-btn masti-btn" onclick="executeCommand('masti')">🤪 Masti Time (Hyderabadi)</button>
+    <button class="menu-btn street-btn" onclick="executeCommand('street-en')">🔥 Street Talk (EN)</button>
+    <button class="menu-btn street-btn" onclick="executeCommand('street-hi')">🔥 Street Talk (HI/UR)</button>
+    <button class="menu-btn masti-btn" onclick="executeCommand('masti')">🤪 Masti Time (Hyd)</button>
   </div>
 
-  <!-- UPGRADED VECTOR ROBOT BASE -->
-  <div id="robot-container" class="slide-in" onclick="triggerSingleAnimation()">
-    <div class="head">
-      <svg id="robot-svg" viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="faceGrad" x1="0" x2="1">
-            <stop offset="0" stop-color="#ffffff"/>
-            <stop offset="1" stop-color="#e6e6e6"/>
-          </linearGradient>
-        </defs>
-        <!-- White outer casing -->
-        <rect x="10" y="10" rx="25" ry="25" width="180" height="160" fill="url(#faceGrad)" stroke="#dcdcdc" stroke-width="2"/>
-        <!-- Dark glossy screen area -->
-        <rect x="25" y="25" rx="18" ry="18" width="150" height="130" fill="#111"/>
-        <!-- Luminous Matrix Eyes -->
-        <g id="eyes">
-          <circle id="pupil-left" cx="65" cy="75" r="12" fill="#00FF41"/>
-          <circle id="pupil-right" cx="135" cy="75" r="12" fill="#00FF41"/>
-        </g>
-        <!-- Luminous Mouth Overlay -->
-        <path id="mouth-path" d="M 75 120 Q 100 135 125 120" stroke="#00FF41" stroke-width="5" fill="none" stroke-linecap="round"/>
-      </svg>
+  <!-- AVATAR DOCK -->
+  <div id="avatar-dock">
+    <div class="avatar-picker">
+      <button class="picker-btn active" data-avatar="robot" onclick="setAvatar('robot')">🤖</button>
+      <button class="picker-btn" data-avatar="girl" onclick="setAvatar('girl')">👧</button>
+      <button class="picker-btn" data-avatar="boy" onclick="setAvatar('boy')">🧑</button>
     </div>
-    <div class="body"></div>
-    <div class="arm left"><div class="hand"></div></div>
-    <div class="arm right"><div class="hand"></div></div>
-    <div class="heart">💖</div>
+
+    <!-- The 3D Character Stage -->
+    <div id="avatar-stage" onclick="triggerGesture()">
+      <canvas id="avatar-canvas"></canvas>
+      <div class="peek-hands">
+        <div class="peek left"></div>
+        <div class="peek right"></div>
+      </div>
+      <div id="heart-container"></div>
+    </div>
   </div>
 
-  <script>
-    const chatBox = document.getElementById('chat-box');
-    const typingIndicator = document.getElementById('typing');
-    const robot = document.getElementById('robot-container');
-    const menu = document.getElementById('fab-menu');
-    const userInput = document.getElementById('user-input');
-    
-    const pupilLeft = document.getElementById('pupil-left');
-    const pupilRight = document.getElementById('pupil-right');
-    const mouthPath = document.getElementById('mouth-path');
-
-    // 1. TEXT CHAT LOGIC
-    async function sendText() {
-        const text = userInput.value.trim();
-        if (!text) return; 
-
-        userInput.value = ''; 
-        addMessage(text, 'user');
-
-        robot.classList.add('slide-in'); 
-
-        let reply = await askGemini(text, "You are a helpful AI assistant. Keep responses under 2 sentences.");
-        addMessage(reply, 'ai');
-        speakText(reply, 'en-US');
-    }
-
-    userInput.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') sendText();
-    });
-
-    // 2. IDLE SPY LOOK (Randomly look around every 1.5 seconds)
-    let isAnimating = false;
-    setInterval(() => {
-        if (!isAnimating) {
-            const dx = (Math.random() - 0.5) * 10;
-            const dy = (Math.random() - 0.5) * 5;
-            pupilLeft.setAttribute('cx', 65 + dx);
-            pupilLeft.setAttribute('cy', 75 + dy);
-            pupilRight.setAttribute('cx', 135 + dx);
-            pupilRight.setAttribute('cy', 75 + dy);
-        }
-    }, 1500);
-
-    // 3. CYCLING SINGLE CLICK ANIMATION LOGIC
-    const animations = ['wave', 'wink', 'kiss'];
-    let animIndex = 0;
-    let menuTimeout;
-
-    function resetRobotFaces() {
-        robot.classList.remove('waving', 'kissing', 'sad');
-        pupilLeft.setAttribute('transform', 'scaleY(1)');
-        pupilLeft.setAttribute('transform-origin', '65px 75px');
-        mouthPath.setAttribute('d', 'M 75 120 Q 100 135 125 120'); 
-        mouthPath.setAttribute('stroke', '#00FF41');
-        isAnimating = false;
-    }
-
-    function triggerSingleAnimation() {
-        if (isAnimating) return;
-        isAnimating = true;
-        clearTimeout(menuTimeout);
-
-        // Keep or pull menu active
-        menu.classList.add('active');
-
-        // Cycle cleanly through one animation at a time
-        const currentAnim = animations[animIndex % animations.length];
-        animIndex++;
-
-        if (currentAnim === 'wave') {
-            robot.classList.add('waving');
-            setTimeout(() => {
-                resetRobotFaces();
-                startMenuCountdown();
-            }, 1200);
-
-        } else if (currentAnim === 'wink') {
-            // Morph layout vectors to simulate a digital wink expression
-            pupilLeft.setAttribute('transform', 'scaleY(0.1)');
-            setTimeout(() => {
-                resetRobotFaces();
-                startMenuCountdown();
-            }, 800);
-
-        } else if (currentAnim === 'kiss') {
-            robot.classList.add('kissing');
-            mouthPath.setAttribute('d', 'M 90 125 Q 100 120 110 125'); // O-shaped mouth
-            mouthPath.setAttribute('stroke', '#FF00FF');
-            setTimeout(() => {
-                resetRobotFaces();
-                startMenuCountdown();
-            }, 1000);
-        }
-    }
-
-    function startMenuCountdown() {
-        clearTimeout(menuTimeout);
-        menuTimeout = setTimeout(() => {
-            menu.classList.remove('active');
-            robot.classList.add('sad');
-            mouthPath.setAttribute('d', 'M 75 130 Q 100 115 125 130'); // Sad inverted mouth
-            
-            setTimeout(() => {
-                resetRobotFaces();
-            }, 1500); 
-        }, 5000); // Closes automatically after 5 seconds of inactivity
-    }
-
-    function executeCommand(mode) {
-        clearTimeout(menuTimeout);
-        menu.classList.remove('active');
-        resetRobotFaces();
-
-        if (mode === 'vision') {
-            document.getElementById('image-upload').click();
-        } else {
-            startLiveTalk(mode);
-        }
-    }
-
-    // 4. CORE AI LOGIC (Vercel Backend Proxy Connector)
-    function addMessage(text, sender, isMasti = false, isError = false) {
-        let div = document.createElement('div');
-        div.className = `msg ${sender}-msg ${isMasti ? 'masti' : ''} ${isError ? 'error' : ''}`;
-        div.innerText = text;
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function speakText(text, language = 'en-US', isMasti = false) {
-        const synth = window.speechSynthesis;
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = language;
-        
-        if (isMasti) {
-            utterance.rate = 0.95; 
-            utterance.pitch = 1.15; 
-        } else {
-            utterance.rate = 1.05;
-            utterance.pitch = 1.0;
-        }
-
-        let voices = synth.getVoices();
-        if (language === 'hi-IN') {
-            let indianVoice = voices.find(v => v.lang === 'hi-IN' || v.lang.includes('hi'));
-            if (indianVoice) utterance.voice = indianVoice;
-        }
-        synth.cancel();
-        synth.speak(utterance);
-    }
-
-    async function askGemini(promptText, systemInstruction = null, base64Image = null, mimeType = null) {
-        typingIndicator.style.display = 'block';
-        try {
-            let contents = [{ role: "user", parts: [{ text: promptText }] }];
-            if (base64Image) {
-                contents[0].parts.unshift({ inlineData: { mimeType: mimeType, data: base64Image } });
-            }
-            let payload = { contents: contents };
-            if (systemInstruction) {
-                payload.systemInstruction = { parts: [{ text: systemInstruction }] };
-            }
-            
-            const response = await fetch(`/api/chat`, {
-                method: "POST", 
-                headers: { "Content-Type": "application/json" }, 
-                body: JSON.stringify(payload)
-            });
-            
-            const data = await response.json();
-            typingIndicator.style.display = 'none';
-            
-            if(data.error) {
-                return "SERVER ERROR: " + (data.error.message || data.error);
-            }
-            
-            return data.candidates[0].content.parts[0].text;
-        } catch (error) {
-            typingIndicator.style.display = 'none';
-            console.error(error);
-            return "Connection error. Make sure your /api/chat.js backend is deployed!";
-        }
-    }
-
-    // 5. VOICE TRANSLATION & DIALOGUE CAPTURE
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    let currentMode = 'standard';
-
-    recognition.onerror = function(event) {
-        addMessage("Mic Error: " + event.error + ". Make sure mic is allowed!", 'ai', false, true);
-    };
-
-    function startLiveTalk(mode) {
-        currentMode = mode;
-        recognition.lang = (mode === 'masti') ? 'hi-IN' : 'en-US';
-        addMessage("Listening... 🎤", 'ai');
-        recognition.start();
-    }
-
-    recognition.onresult = async (event) => {
-        const spokenText = event.results[0][0].transcript;
-        addMessage(spokenText, 'user');
-        let reply = "";
-        if (currentMode === 'masti') {
-            let sysPrompt = "You are a chill, funny friend from Hyderabad, India. Speak entirely in heavy Hyderabadi slang (using words like baigan, ustad, yaaro, hao, nakko, kirak). Keep it brief and funny. Use Roman Urdu/Hindi text.";
-            reply = await askGemini(spokenText, sysPrompt);
-            addMessage(reply, 'ai', true);
-            speakText(reply, 'hi-IN', true); 
-        } else {
-            reply = await askGemini(spokenText, "You are a helpful AI assistant. Keep responses under 2 sentences.");
-            addMessage(reply, 'ai');
-            speakText(reply, 'en-US', false);
-        }
-    };
-
-    // 6. VISION FILES UPLOAD ENGINE
-    async function handleVisionUpload(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        addMessage(`Analyzing image: ${file.name} 📷`, 'user');
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-            const base64String = reader.result.split(',')[1];
-            let reply = await askGemini("Explain what is happening in this image briefly.", null, base64String, file.type);
-            addMessage(reply, 'ai');
-            speakText(reply, 'en-US');
-        };
-        reader.readAsDataURL(file);
-    }
-  </script>
+  <!-- Three.js r128 — matches this environment's cached version -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="avatar3d.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
